@@ -23,23 +23,21 @@ st.markdown("""
         font-weight: bold;
     }
     
-    /* 2. PARANDUS: EXPANDER (DETAILVAADE) HELEDAKS */
-    [data-testid="stExpanderDetails"] {
-        background-color: #f8f9fa !important;
-        color: #333333 !important;
-        border-radius: 8px;
-    }
-    [data-testid="stExpander"] {
+    /* 2. PARANDUS: EXPANDER (DETAILVAADE) HELEDAKS JA MÄRKAMATUKS */
+    .streamlit-expanderContent {
         background-color: #ffffff !important;
-        border-radius: 8px;
         color: #333333 !important;
+        border: 1px solid #ddd;
+        border-radius: 0 0 8px 8px;
     }
     .streamlit-expanderHeader {
+        background-color: #f0f0f0 !important;
         color: #333333 !important;
+        border-radius: 8px;
         font-weight: bold;
     }
     /* Sundida markdown teksti expanderi sees tumedaks */
-    [data-testid="stExpanderDetails"] p, [data-testid="stExpanderDetails"] li {
+    .streamlit-expanderContent p, .streamlit-expanderContent li, .streamlit-expanderContent span {
         color: #333333 !important;
     }
 
@@ -105,7 +103,7 @@ st.markdown("""
     .bar-wrapper {
         position: relative;
         width: 100%;
-        height: 160px; /* Suurendatud, et tekstid ei kattuks */
+        height: 180px; /* VEEL KÕRGEM */
         background: #eeeeee;
         border-radius: 8px;
         margin-top: 20px;
@@ -115,17 +113,18 @@ st.markdown("""
     }
     .bar-header {
         position: absolute;
-        top: 10px;
+        top: 8px;
         left: 0;
         width: 100%;
         text-align: center;
-        font-size: 12px;
-        color: #777;
+        font-size: 13px;
+        color: #555;
         font-weight: bold;
+        z-index: 20;
     }
     .bar-container {
         position: absolute;
-        bottom: 30px; /* Liigutatud allapoole */
+        bottom: 30px; 
         left: 0;
         width: 100%;
         height: 50px;
@@ -149,7 +148,7 @@ st.markdown("""
     }
     .icon-marker {
         position: absolute;
-        bottom: 85px; /* Liigutatud allapoole koos ribaga */
+        bottom: 85px; 
         font-size: 24px;
         transform: translateX(-50%);
         text-align: center;
@@ -160,19 +159,21 @@ st.markdown("""
     }
     .reaction-line {
         position: absolute;
-        top: 35px; /* Liigutatud allapoole pealkirjast eemale */
+        top: 40px; /* Liigutatud allapoole */
         bottom: 30px;
         width: 2px;
-        background-color: rgba(0,0,0,0.3);
+        background-color: rgba(0,0,0,0.4);
         z-index: 5;
         border-right: 1px dashed white;
     }
     .reaction-label {
         position: absolute;
-        top: 35px; /* Liigutatud allapoole */
-        font-size: 10px;
-        color: #666;
-        padding-left: 4px;
+        top: 40px; /* Liigutatud allapoole */
+        font-size: 11px;
+        color: #444;
+        padding-left: 6px;
+        font-weight: bold;
+        background-color: rgba(238,238,238, 0.7); /* Taust loetavuse parandamiseks */
     }
 
     /* 5. ALUMISED INFO-RIBAD */
@@ -246,7 +247,7 @@ def get_fatality_risk(speed, risk_type):
             return r1 + (speed - v1) * (r2 - r1) / (v2 - v1)
     return data[-1][1]
 
-# --- UI ---
+# --- UI (KASUTAJALIIDES) ---
 
 st.title("Ajavõidu kalkulaator")
 
@@ -312,25 +313,25 @@ if st.session_state.show_results:
         if val < 50: return "#ffc107"
         return "#dc3545"
 
-    risk_html = f"""
-    <div class="risk-container">
-        <div class="risk-box">
-            <div class="risk-icons"><span class="flipped">🚶</span>💥🚗</div>
-            <span class="risk-title">Jalakäija:</span>
-            <div class="risk-val" style="color: {get_risk_color(risk_ped)}">{risk_ped}%</div>
-        </div>
-        <div class="risk-box">
-            <div class="risk-icons"><span class="flipped">🚗</span>💥🚗</div>
-            <span class="risk-title">Laupkokkupõrge:</span>
-            <div class="risk-val" style="color: {get_risk_color(risk_head)}">{risk_head}%</div>
-        </div>
-        <div class="risk-box">
-            <div class="risk-icons">🚘💥🚗</div>
-            <span class="risk-title">Külgkokkupõrge:</span>
-            <div class="risk-val" style="color: {get_risk_color(risk_side)}">{risk_side}%</div>
-        </div>
-    </div>
-    """
+    risk_html = "".join([
+        '<div class="risk-container">',
+        '<div class="risk-box">',
+        '<div class="risk-icons"><span class="flipped">🚶</span>💥🚗</div>',
+        '<span class="risk-title">Jalakäija:</span>',
+        f'<div class="risk-val" style="color: {get_risk_color(risk_ped)}">{risk_ped}%</div>',
+        '</div>',
+        '<div class="risk-box">',
+        '<div class="risk-icons"><span class="flipped">🚗</span>💥🚗</div>',
+        '<span class="risk-title">Laupkokkupõrge:</span>',
+        f'<div class="risk-val" style="color: {get_risk_color(risk_head)}">{risk_head}%</div>',
+        '</div>',
+        '<div class="risk-box">',
+        '<div class="risk-icons">🚘💥🚗</div>',
+        '<span class="risk-title">Külgkokkupõrge:</span>',
+        f'<div class="risk-val" style="color: {get_risk_color(risk_side)}">{risk_side}%</div>',
+        '</div>',
+        '</div>'
+    ])
     st.markdown(risk_html, unsafe_allow_html=True)
 
     # 3. MODAL / DETAILVAADE
@@ -359,17 +360,15 @@ if st.session_state.show_results:
         * Tegelikul kiirusel on kokkupõrke kiirus **{coll_speed:.1f} km/h**.
         """)
 
-    # 4. GRAAFILINE RIBA
+    # 4. GRAAFILINE RIBA (Parandatud "Black Box" viga)
     # Arvutame skaala
     max_scale = max(total_dist_actual, total_dist_allowed, obstacle_dist, 1) * 1.15
     def pct(val): return (val / max_scale) * 100
     
-    # Ikoonide asukohad
     final_car_dist = min(total_dist_actual, obstacle_dist) if coll_speed > 0 else total_dist_actual
     car_pos = pct(final_car_dist)
     ped_pos = pct(obstacle_dist)
     
-    # Ribade laiused
     bar1_width = pct(total_dist_allowed)
     bar2_width = pct(excess_dist)
     bar2_left = bar1_width 
@@ -378,34 +377,28 @@ if st.session_state.show_results:
         bar1_width = pct(total_dist_actual)
         bar2_width = 0
 
-    # Konstrueerime HTML-i ühes reas või kasutame hoolikalt taandeid, et vältida "koodiploki" efekti
-    # Tekstide kuvamise loogika: näita ainult siis, kui riba on piisavalt lai
     bar1_text = f"{total_dist_allowed:.1f}m" if bar1_width > 12 else ""
     bar2_text = f"+{excess_dist:.1f}m" if bar2_width > 12 else ""
 
-    # Ehitame HTML stringi nii, et ei tekiks probleeme taanetega
-    bar_html = f"""
-    <div class="bar-wrapper">
-        <div class="bar-header">Peatumisteekonna visualiseering</div>
-        
-        <div class="icon-marker" style="left: {ped_pos}%;">
-            <span class="flipped" style="display:inline-block;">🚶</span><br>
-            <span style="font-size: 12px; font-weight:bold;">{obstacle_dist:.1f}m</span>
-        </div>
-        
-        <div class="icon-marker" style="left: {car_pos}%; z-index: 12;">
-            <span class="flipped" style="display:inline-block;">🚗</span>
-        </div>
-
-        <div class="bar-container">
-            <div class="bar-segment" style="width: {bar1_width}%; background-color: #28a745; left: 0;">{bar1_text}</div>
-            <div class="bar-segment" style="width: {bar2_width}%; background-color: #dc3545; left: {bar2_left}%;">{bar2_text}</div>
-        </div>
-        
-        <div class="reaction-line" style="left: {pct(r_dist_act)}%;"></div>
-        <div class="reaction-label" style="left:{pct(r_dist_act) + 1}%;">Reageerimine ({r_dist_act:.1f}m)</div>
-    </div>
-    """
+    # KASUTAME .join(), ET EEMALDADA KÕIK REAVAHETUSED - see parandab "musta kasti" vea kindlalt
+    bar_html = "".join([
+        '<div class="bar-wrapper">',
+        '<div class="bar-header">Peatumisteekonna visualiseering</div>',
+        f'<div class="icon-marker" style="left: {ped_pos}%;">',
+        '<span class="flipped" style="display:inline-block;">🚶</span><br>',
+        f'<span style="font-size: 12px; font-weight:bold;">{obstacle_dist:.1f}m</span>',
+        '</div>',
+        f'<div class="icon-marker" style="left: {car_pos}%; z-index: 12;">',
+        '<span class="flipped" style="display:inline-block;">🚗</span>',
+        '</div>',
+        '<div class="bar-container">',
+        f'<div class="bar-segment" style="width: {bar1_width}%; background-color: #28a745; left: 0;">{bar1_text}</div>',
+        f'<div class="bar-segment" style="width: {bar2_width}%; background-color: #dc3545; left: {bar2_left}%;">{bar2_text}</div>',
+        '</div>',
+        f'<div class="reaction-line" style="left: {pct(r_dist_act)}%;"></div>',
+        f'<div class="reaction-label" style="left:{pct(r_dist_act) + 1}%;">Reageerimine ({r_dist_act:.1f}m)</div>',
+        '</div>'
+    ])
     st.markdown(bar_html, unsafe_allow_html=True)
     
     # 5. ALUMISED HOIATUSED
