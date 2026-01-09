@@ -23,6 +23,26 @@ st.markdown("""
         font-weight: bold;
     }
     
+    /* 2. PARANDUS: EXPANDER (DETAILVAADE) HELEDAKS */
+    [data-testid="stExpanderDetails"] {
+        background-color: #f8f9fa !important;
+        color: #333333 !important;
+        border-radius: 8px;
+    }
+    [data-testid="stExpander"] {
+        background-color: #ffffff !important;
+        border-radius: 8px;
+        color: #333333 !important;
+    }
+    .streamlit-expanderHeader {
+        color: #333333 !important;
+        font-weight: bold;
+    }
+    /* Sundida markdown teksti expanderi sees tumedaks */
+    [data-testid="stExpanderDetails"] p, [data-testid="stExpanderDetails"] li {
+        color: #333333 !important;
+    }
+
     /* Nuppude stiil */
     div.stButton > button {
         width: 100%;
@@ -37,7 +57,7 @@ st.markdown("""
         color: white;
     }
 
-    /* 2. RISKIKAARTIDE STIIL */
+    /* 3. RISKIKAARTIDE STIIL */
     .risk-container {
         display: flex;
         gap: 10px;
@@ -81,11 +101,11 @@ st.markdown("""
         transform: scaleX(-1);
     }
 
-    /* 3. VISUAALNE GRAAFIK (RIBA) */
+    /* 4. VISUAALNE GRAAFIK (RIBA) - SUURENDATUD KÕRGUST JA PAIGUTUST */
     .bar-wrapper {
         position: relative;
         width: 100%;
-        height: 140px;
+        height: 160px; /* Suurendatud, et tekstid ei kattuks */
         background: #eeeeee;
         border-radius: 8px;
         margin-top: 20px;
@@ -94,15 +114,18 @@ st.markdown("""
         color: #333;
     }
     .bar-header {
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 100%;
         text-align: center;
-        padding-top: 5px;
         font-size: 12px;
         color: #777;
-        width: 100%;
+        font-weight: bold;
     }
     .bar-container {
         position: absolute;
-        bottom: 40px;
+        bottom: 30px; /* Liigutatud allapoole */
         left: 0;
         width: 100%;
         height: 50px;
@@ -126,7 +149,7 @@ st.markdown("""
     }
     .icon-marker {
         position: absolute;
-        bottom: 95px;
+        bottom: 85px; /* Liigutatud allapoole koos ribaga */
         font-size: 24px;
         transform: translateX(-50%);
         text-align: center;
@@ -137,15 +160,22 @@ st.markdown("""
     }
     .reaction-line {
         position: absolute;
-        top: 10px;
-        bottom: 40px;
+        top: 35px; /* Liigutatud allapoole pealkirjast eemale */
+        bottom: 30px;
         width: 2px;
         background-color: rgba(0,0,0,0.3);
         z-index: 5;
         border-right: 1px dashed white;
     }
+    .reaction-label {
+        position: absolute;
+        top: 35px; /* Liigutatud allapoole */
+        font-size: 10px;
+        color: #666;
+        padding-left: 4px;
+    }
 
-    /* 4. ALUMISED INFO-RIBAD */
+    /* 5. ALUMISED INFO-RIBAD */
     .alert-box {
         padding: 15px;
         border-radius: 8px;
@@ -216,7 +246,7 @@ def get_fatality_risk(speed, risk_type):
             return r1 + (speed - v1) * (r2 - r1) / (v2 - v1)
     return data[-1][1]
 
-# --- UI (KASUTAJALIIDES) ---
+# --- UI ---
 
 st.title("Ajavõidu kalkulaator")
 
@@ -283,24 +313,24 @@ if st.session_state.show_results:
         return "#dc3545"
 
     risk_html = f"""
-<div class="risk-container">
-    <div class="risk-box">
-        <div class="risk-icons"><span class="flipped">🚶</span>💥🚗</div>
-        <span class="risk-title">Jalakäija:</span>
-        <div class="risk-val" style="color: {get_risk_color(risk_ped)}">{risk_ped}%</div>
+    <div class="risk-container">
+        <div class="risk-box">
+            <div class="risk-icons"><span class="flipped">🚶</span>💥🚗</div>
+            <span class="risk-title">Jalakäija:</span>
+            <div class="risk-val" style="color: {get_risk_color(risk_ped)}">{risk_ped}%</div>
+        </div>
+        <div class="risk-box">
+            <div class="risk-icons"><span class="flipped">🚗</span>💥🚗</div>
+            <span class="risk-title">Laupkokkupõrge:</span>
+            <div class="risk-val" style="color: {get_risk_color(risk_head)}">{risk_head}%</div>
+        </div>
+        <div class="risk-box">
+            <div class="risk-icons">🚘💥🚗</div>
+            <span class="risk-title">Külgkokkupõrge:</span>
+            <div class="risk-val" style="color: {get_risk_color(risk_side)}">{risk_side}%</div>
+        </div>
     </div>
-    <div class="risk-box">
-        <div class="risk-icons"><span class="flipped">🚗</span>💥🚗</div>
-        <span class="risk-title">Laupkokkupõrge:</span>
-        <div class="risk-val" style="color: {get_risk_color(risk_head)}">{risk_head}%</div>
-    </div>
-    <div class="risk-box">
-        <div class="risk-icons">🚘💥🚗</div>
-        <span class="risk-title">Külgkokkupõrge:</span>
-        <div class="risk-val" style="color: {get_risk_color(risk_side)}">{risk_side}%</div>
-    </div>
-</div>
-"""
+    """
     st.markdown(risk_html, unsafe_allow_html=True)
 
     # 3. MODAL / DETAILVAADE
@@ -330,13 +360,16 @@ if st.session_state.show_results:
         """)
 
     # 4. GRAAFILINE RIBA
+    # Arvutame skaala
     max_scale = max(total_dist_actual, total_dist_allowed, obstacle_dist, 1) * 1.15
     def pct(val): return (val / max_scale) * 100
     
+    # Ikoonide asukohad
     final_car_dist = min(total_dist_actual, obstacle_dist) if coll_speed > 0 else total_dist_actual
     car_pos = pct(final_car_dist)
     ped_pos = pct(obstacle_dist)
     
+    # Ribade laiused
     bar1_width = pct(total_dist_allowed)
     bar2_width = pct(excess_dist)
     bar2_left = bar1_width 
@@ -345,29 +378,34 @@ if st.session_state.show_results:
         bar1_width = pct(total_dist_actual)
         bar2_width = 0
 
-    # HTML string ilma taandeta (et vältida koodiploki teket)
+    # Konstrueerime HTML-i ühes reas või kasutame hoolikalt taandeid, et vältida "koodiploki" efekti
+    # Tekstide kuvamise loogika: näita ainult siis, kui riba on piisavalt lai
+    bar1_text = f"{total_dist_allowed:.1f}m" if bar1_width > 12 else ""
+    bar2_text = f"+{excess_dist:.1f}m" if bar2_width > 12 else ""
+
+    # Ehitame HTML stringi nii, et ei tekiks probleeme taanetega
     bar_html = f"""
-<div class="bar-wrapper">
-    <div class="bar-header">Peatumisteekonna visualiseering</div>
-    <div class="icon-marker" style="left: {ped_pos}%;">
-        <span class="flipped" style="display:inline-block;">🚶</span><br>
-        <span style="font-size: 12px; font-weight:bold;">{obstacle_dist:.1f}m</span>
-    </div>
-    <div class="icon-marker" style="left: {car_pos}%; z-index: 12;">
-        <span class="flipped" style="display:inline-block;">🚗</span>
-    </div>
-    <div class="bar-container">
-        <div class="bar-segment" style="width: {bar1_width}%; background-color: #28a745; left: 0;">
-            {f'{total_dist_allowed:.1f}m' if bar1_width > 15 else ''}
+    <div class="bar-wrapper">
+        <div class="bar-header">Peatumisteekonna visualiseering</div>
+        
+        <div class="icon-marker" style="left: {ped_pos}%;">
+            <span class="flipped" style="display:inline-block;">🚶</span><br>
+            <span style="font-size: 12px; font-weight:bold;">{obstacle_dist:.1f}m</span>
         </div>
-        <div class="bar-segment" style="width: {bar2_width}%; background-color: #dc3545; left: {bar2_left}%;">
-            {f'+{excess_dist:.1f}m' if bar2_width > 12 else ''}
+        
+        <div class="icon-marker" style="left: {car_pos}%; z-index: 12;">
+            <span class="flipped" style="display:inline-block;">🚗</span>
         </div>
+
+        <div class="bar-container">
+            <div class="bar-segment" style="width: {bar1_width}%; background-color: #28a745; left: 0;">{bar1_text}</div>
+            <div class="bar-segment" style="width: {bar2_width}%; background-color: #dc3545; left: {bar2_left}%;">{bar2_text}</div>
+        </div>
+        
+        <div class="reaction-line" style="left: {pct(r_dist_act)}%;"></div>
+        <div class="reaction-label" style="left:{pct(r_dist_act) + 1}%;">Reageerimine ({r_dist_act:.1f}m)</div>
     </div>
-    <div class="reaction-line" style="left: {pct(r_dist_act)}%;"></div>
-    <div style="position:absolute; top:12px; left:{pct(r_dist_act) + 1}%; font-size:10px; color:#666;">Reageerimine ({r_dist_act:.1f}m)</div>
-</div>
-"""
+    """
     st.markdown(bar_html, unsafe_allow_html=True)
     
     # 5. ALUMISED HOIATUSED
