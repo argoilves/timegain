@@ -9,157 +9,155 @@ st.set_page_config(
 )
 
 # --- CSS STIILID ---
-# See plokk on tavaline string (mitte f-string), et vältida konflikti CSS loogeliste sulgudega.
 st.markdown("""
-    <style>
-        /* 1. ÜLDINE DISAIN (SUNNIME HELEDA TEEMA) */
-        .stApp {
-            background-color: #f4f4f9;
-            color: #333333;
-        }
-        
-        /* Sisendite sildid tumedaks */
-        .stTextInput > label, .stNumberInput > label, .stSelectbox > label {
-            color: #333333 !important;
-            font-weight: bold;
-        }
-        
-        /* Nuppude stiil */
-        div.stButton > button {
-            width: 100%;
-            background-color: #ff4b4b;
-            color: white;
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-        }
-        div.stButton > button:hover {
-            background-color: #ff3333;
-            color: white;
-        }
+<style>
+    /* 1. ÜLDINE DISAIN (SUNNIME HELEDA TEEMA) */
+    .stApp {
+        background-color: #f4f4f9;
+        color: #333333;
+    }
+    
+    /* Sisendite sildid tumedaks */
+    .stTextInput > label, .stNumberInput > label, .stSelectbox > label {
+        color: #333333 !important;
+        font-weight: bold;
+    }
+    
+    /* Nuppude stiil */
+    div.stButton > button {
+        width: 100%;
+        background-color: #ff4b4b;
+        color: white;
+        border: none;
+        padding: 10px;
+        font-size: 16px;
+    }
+    div.stButton > button:hover {
+        background-color: #ff3333;
+        color: white;
+    }
 
-        /* 2. RISKIKAARTIDE STIIL */
-        .risk-container {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            margin-top: 20px;
-        }
-        .risk-box {
-            flex: 1;
-            min-width: 120px;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            background-color: #e0f7fa;
-            border: 1px solid #0097a7;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            color: #333 !important;
-        }
-        .risk-icons {
-            font-size: 2em;
-            margin-bottom: 5px;
-            line-height: 1;
-        }
-        .risk-title {
-            font-weight: bold;
-            font-size: 0.9em;
-            margin-bottom: 5px;
-            display: block;
-            color: #555;
-        }
-        .risk-val {
-            font-size: 1.6em;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        /* Ikoonide pööramine */
-        .flipped {
-            display: inline-block;
-            transform: scaleX(-1);
-        }
+    /* 2. RISKIKAARTIDE STIIL */
+    .risk-container {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+    .risk-box {
+        flex: 1;
+        min-width: 120px;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        background-color: #e0f7fa;
+        border: 1px solid #0097a7;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        color: #333 !important;
+    }
+    .risk-icons {
+        font-size: 2em;
+        margin-bottom: 5px;
+        line-height: 1;
+    }
+    .risk-title {
+        font-weight: bold;
+        font-size: 0.9em;
+        margin-bottom: 5px;
+        display: block;
+        color: #555;
+    }
+    .risk-val {
+        font-size: 1.6em;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    /* Ikoonide pööramine */
+    .flipped {
+        display: inline-block;
+        transform: scaleX(-1);
+    }
 
-        /* 3. VISUAALNE GRAAFIK (RIBA) */
-        .bar-wrapper {
-            position: relative;
-            width: 100%;
-            height: 140px;
-            background: #eeeeee;
-            border-radius: 8px;
-            margin-top: 20px;
-            overflow: hidden;
-            border: 1px solid #ccc;
-            color: #333;
-        }
-        .bar-header {
-            text-align: center;
-            padding-top: 5px;
-            font-size: 12px;
-            color: #777;
-            width: 100%;
-        }
-        .bar-container {
-            position: absolute;
-            bottom: 40px;
-            left: 0;
-            width: 100%;
-            height: 50px;
-            background: #ddd;
-            border-radius: 4px;
-        }
-        .bar-segment {
-            height: 100%;
-            position: absolute;
-            top: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 0.8em;
-            white-space: nowrap;
-            overflow: hidden;
-            box-shadow: 1px 0 2px rgba(0,0,0,0.2);
-            transition: width 0.5s ease;
-        }
-        .icon-marker {
-            position: absolute;
-            bottom: 95px;
-            font-size: 24px;
-            transform: translateX(-50%);
-            text-align: center;
-            line-height: 1;
-            transition: left 0.5s ease;
-            z-index: 10;
-            color: #333;
-        }
-        .reaction-line {
-            position: absolute;
-            top: 10px;
-            bottom: 40px;
-            width: 2px;
-            background-color: rgba(0,0,0,0.3);
-            z-index: 5;
-            border-right: 1px dashed white;
-        }
+    /* 3. VISUAALNE GRAAFIK (RIBA) */
+    .bar-wrapper {
+        position: relative;
+        width: 100%;
+        height: 140px;
+        background: #eeeeee;
+        border-radius: 8px;
+        margin-top: 20px;
+        overflow: hidden;
+        border: 1px solid #ccc;
+        color: #333;
+    }
+    .bar-header {
+        text-align: center;
+        padding-top: 5px;
+        font-size: 12px;
+        color: #777;
+        width: 100%;
+    }
+    .bar-container {
+        position: absolute;
+        bottom: 40px;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        background: #ddd;
+        border-radius: 4px;
+    }
+    .bar-segment {
+        height: 100%;
+        position: absolute;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 0.8em;
+        white-space: nowrap;
+        overflow: hidden;
+        box-shadow: 1px 0 2px rgba(0,0,0,0.2);
+        transition: width 0.5s ease;
+    }
+    .icon-marker {
+        position: absolute;
+        bottom: 95px;
+        font-size: 24px;
+        transform: translateX(-50%);
+        text-align: center;
+        line-height: 1;
+        transition: left 0.5s ease;
+        z-index: 10;
+        color: #333;
+    }
+    .reaction-line {
+        position: absolute;
+        top: 10px;
+        bottom: 40px;
+        width: 2px;
+        background-color: rgba(0,0,0,0.3);
+        z-index: 5;
+        border-right: 1px dashed white;
+    }
 
-        /* 4. ALUMISED INFO-RIBAD */
-        .alert-box {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-align: center;
-            color: #333 !important;
-        }
-        .alert-green { background-color: #d4edda; border: 1px solid #c3e6cb; }
-        .alert-red { background-color: #f8d7da; border: 1px solid #f5c6cb; }
-        .alert-yellow { background-color: #fff3cd; border: 1px solid #ffeeba; }
-
-    </style>
+    /* 4. ALUMISED INFO-RIBAD */
+    .alert-box {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-weight: bold;
+        text-align: center;
+        color: #333 !important;
+    }
+    .alert-green { background-color: #d4edda; border: 1px solid #c3e6cb; }
+    .alert-red { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+    .alert-yellow { background-color: #fff3cd; border: 1px solid #ffeeba; }
+</style>
 """, unsafe_allow_html=True)
 
 # --- FÜÜSIKA JA ARVUTUSED ---
@@ -222,11 +220,9 @@ def get_fatality_risk(speed, risk_type):
 
 st.title("Ajavõidu kalkulaator")
 
-# Initsialiseeri olek
 if 'show_results' not in st.session_state:
     st.session_state.show_results = False
 
-# SISENDVÄLJAD
 col1, col2 = st.columns(2)
 with col1:
     distance = st.number_input("Läbitav vahemaa (km)", value=10.0, step=0.1, min_value=0.1)
@@ -244,11 +240,10 @@ obstacle_dist = st.number_input("Kaugus takistusest (m)", value=25.0, step=1.0, 
 
 st.write("") 
 
-# ARVUTA NUPP
 if st.button("Arvuta"):
     st.session_state.show_results = True
 
-# --- TULEMUSTE KUVAMINE ---
+# --- TULEMUSED ---
 if st.session_state.show_results:
     
     # Arvutused
@@ -269,6 +264,7 @@ if st.session_state.show_results:
 
     # 1. AJAVÕIT
     time_gain_msg = ""
+    bg_class = "alert-yellow"
     if time_gain_min > 0.01:
         time_gain_msg = f"🚗 Säästate aega: {time_gain_min:.1f} min"
         bg_class = "alert-green"
@@ -277,7 +273,6 @@ if st.session_state.show_results:
         bg_class = "alert-red"
     else:
         time_gain_msg = "🚗 Ajavõitu ega kaotust pole."
-        bg_class = "alert-yellow"
 
     st.markdown(f'<div class="alert-box {bg_class}">{time_gain_msg}</div>', unsafe_allow_html=True)
 
@@ -287,32 +282,25 @@ if st.session_state.show_results:
         if val < 50: return "#ffc107"
         return "#dc3545"
 
-    # Kasutame f-stringi HTML-i genereerimiseks
     risk_html = f"""
-    <div class="risk-container">
-        <div class="risk-box">
-            <div class="risk-icons">
-                <span class="flipped">🚶</span>💥🚗
-            </div>
-            <span class="risk-title">Jalakäija:</span>
-            <div class="risk-val" style="color: {get_risk_color(risk_ped)}">{risk_ped}%</div>
-        </div>
-        <div class="risk-box">
-            <div class="risk-icons">
-                <span class="flipped">🚗</span>💥🚗
-            </div>
-            <span class="risk-title">Laupkokkupõrge:</span>
-            <div class="risk-val" style="color: {get_risk_color(risk_head)}">{risk_head}%</div>
-        </div>
-        <div class="risk-box">
-            <div class="risk-icons">
-                🚘💥🚗
-            </div>
-            <span class="risk-title">Külgkokkupõrge:</span>
-            <div class="risk-val" style="color: {get_risk_color(risk_side)}">{risk_side}%</div>
-        </div>
+<div class="risk-container">
+    <div class="risk-box">
+        <div class="risk-icons"><span class="flipped">🚶</span>💥🚗</div>
+        <span class="risk-title">Jalakäija:</span>
+        <div class="risk-val" style="color: {get_risk_color(risk_ped)}">{risk_ped}%</div>
     </div>
-    """
+    <div class="risk-box">
+        <div class="risk-icons"><span class="flipped">🚗</span>💥🚗</div>
+        <span class="risk-title">Laupkokkupõrge:</span>
+        <div class="risk-val" style="color: {get_risk_color(risk_head)}">{risk_head}%</div>
+    </div>
+    <div class="risk-box">
+        <div class="risk-icons">🚘💥🚗</div>
+        <span class="risk-title">Külgkokkupõrge:</span>
+        <div class="risk-val" style="color: {get_risk_color(risk_side)}">{risk_side}%</div>
+    </div>
+</div>
+"""
     st.markdown(risk_html, unsafe_allow_html=True)
 
     # 3. MODAL / DETAILVAADE
@@ -357,33 +345,29 @@ if st.session_state.show_results:
         bar1_width = pct(total_dist_actual)
         bar2_width = 0
 
+    # HTML string ilma taandeta (et vältida koodiploki teket)
     bar_html = f"""
-    <div class="bar-wrapper">
-        <div class="bar-header">Peatumisteekonna visualiseering</div>
-        
-        <div class="icon-marker" style="left: {ped_pos}%;">
-            <span class="flipped" style="display:inline-block;">🚶</span><br>
-            <span style="font-size: 12px; font-weight:bold;">{obstacle_dist:.1f}m</span>
-        </div>
-        
-        <div class="icon-marker" style="left: {car_pos}%; z-index: 12;">
-            <span class="flipped" style="display:inline-block;">🚗</span>
-        </div>
-
-        <div class="bar-container">
-            <div class="bar-segment" style="width: {bar1_width}%; background-color: #28a745; left: 0;">
-                {f'{total_dist_allowed:.1f}m' if bar1_width > 15 else ''}
-            </div>
-            
-            <div class="bar-segment" style="width: {bar2_width}%; background-color: #dc3545; left: {bar2_left}%;">
-                {f'+{excess_dist:.1f}m' if bar2_width > 12 else ''}
-            </div>
-        </div>
-        
-        <div class="reaction-line" style="left: {pct(r_dist_act)}%;"></div>
-        <div style="position:absolute; top:12px; left:{pct(r_dist_act) + 1}%; font-size:10px; color:#666;">Reageerimine ({r_dist_act:.1f}m)</div>
+<div class="bar-wrapper">
+    <div class="bar-header">Peatumisteekonna visualiseering</div>
+    <div class="icon-marker" style="left: {ped_pos}%;">
+        <span class="flipped" style="display:inline-block;">🚶</span><br>
+        <span style="font-size: 12px; font-weight:bold;">{obstacle_dist:.1f}m</span>
     </div>
-    """
+    <div class="icon-marker" style="left: {car_pos}%; z-index: 12;">
+        <span class="flipped" style="display:inline-block;">🚗</span>
+    </div>
+    <div class="bar-container">
+        <div class="bar-segment" style="width: {bar1_width}%; background-color: #28a745; left: 0;">
+            {f'{total_dist_allowed:.1f}m' if bar1_width > 15 else ''}
+        </div>
+        <div class="bar-segment" style="width: {bar2_width}%; background-color: #dc3545; left: {bar2_left}%;">
+            {f'+{excess_dist:.1f}m' if bar2_width > 12 else ''}
+        </div>
+    </div>
+    <div class="reaction-line" style="left: {pct(r_dist_act)}%;"></div>
+    <div style="position:absolute; top:12px; left:{pct(r_dist_act) + 1}%; font-size:10px; color:#666;">Reageerimine ({r_dist_act:.1f}m)</div>
+</div>
+"""
     st.markdown(bar_html, unsafe_allow_html=True)
     
     # 5. ALUMISED HOIATUSED
