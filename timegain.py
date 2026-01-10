@@ -17,28 +17,52 @@ st.markdown("""
         color: #333333;
     }
     
-    /* 2. TEKSTIVÄLJAD VALGEKS */
+    /* 2. TEKSTIVÄLJAD JA RIPPMENÜÜD (DROPDOWNS) VALGEKS */
+    
+    /* Tavaline sisendkast */
     input.st-ai, input.st-ah, div[data-baseweb="select"] > div {
         background-color: #ffffff !important;
         color: #000000 !important;
         border-color: #cccccc;
     }
-    div[data-baseweb="menu"], div[data-baseweb="popover"] {
-        background-color: #ffffff !important;
-    }
-    div[data-baseweb="menu"] li, div[data-baseweb="menu"] div {
-        color: #000000 !important;
-    }
+    
+    /* Sildid (Labelid) */
     .stTextInput label, .stNumberInput label, .stSelectbox label {
         color: #333333 !important;
         font-weight: bold;
+    }
+
+    /* RIPPMENÜÜDE SISU (See, mis lahti hüppab) */
+    div[data-baseweb="popover"], 
+    div[data-baseweb="menu"],
+    ul[data-testid="stSelectboxVirtualDropdown"] {
+        background-color: #ffffff !important;
+        border: 1px solid #ccc !important;
+    }
+    
+    /* Rippmenüü valikud */
+    li[role="option"], 
+    li[data-baseweb="option"], 
+    div[role="option"] {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+    }
+    
+    /* Valiku üleliikumine (hover) */
+    li[role="option"]:hover, li[role="option"]:focus, .stSelectboxVirtualDropdownOption:hover {
+        background-color: #f0f0f0 !important;
+    }
+    
+    /* Hetkel valitud väärtus kastis */
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] div {
+        color: #000000 !important;
     }
 
     /* 3. VISUAALNE GRAAFIK */
     .bar-wrapper {
         position: relative;
         width: 100%;
-        height: 220px; /* Piisavalt kõrge */
+        height: 220px;
         background: #eeeeee;
         border-radius: 8px;
         margin-top: 10px;
@@ -60,45 +84,41 @@ st.markdown("""
         z-index: 20;
     }
 
-    /* IKOONIDE ÜLDSTIIL */
+    /* IKOONID */
     .icon-base {
         position: absolute;
         bottom: 95px; 
         font-size: 28px;
-        transform: translateX(-50%); /* Tsentreerime ikooni punkti suhtes */
+        transform: translateX(-50%);
         text-align: center;
         line-height: 1;
-        z-index: 10;
     }
 
-    /* JALAKÄIJA - PAIGAL (Ei animeeri 'left' omadust, see on fikseeritud) */
+    /* JALAKÄIJA - PAIGAL */
     .pedestrian-icon {
-        z-index: 5; /* Auto sõidab visuaalselt üle või alla, aga tekst peab jääma peale */
+        z-index: 5; 
     }
     
-    /* JALAKÄIJA TEKST - Tõstetud kõrgemale ja ettepoole */
+    /* JALAKÄIJA TEKST - Auto sõidab sellest ÜLE (z-index väiksem kui autol) */
     .ped-label {
         position: absolute;
-        top: -25px; /* Ikooni kohal */
+        top: 35px; /* Ikooni all/kõrval teekonna peal */
         left: 50%;
         transform: translateX(-50%);
         font-size: 12px;
         font-weight: bold;
-        color: #000;
+        color: #555;
         white-space: nowrap;
-        background: rgba(255,255,255,0.7);
-        padding: 2px 4px;
-        border-radius: 4px;
-        z-index: 30; /* Kõige peal */
+        z-index: 1; /* Väike z-index, et auto kataks selle */
     }
 
     /* AUTO - ANIMEERITUD */
     .car-icon {
         left: 0;
-        /* Animatsioon: nimi, kestus, viide (delay), funktsioon */
-        animation: moveCar var(--anim-duration) ease-out forwards;
+        /* Kasutame 'linear' et sünkroon oleks perfektne */
+        animation: moveCar var(--anim-duration) linear forwards;
         animation-delay: var(--start-delay);
-        z-index: 20;
+        z-index: 20; /* Auto on kõige peal */
     }
     @keyframes moveCar {
         from { left: 0; }
@@ -114,7 +134,7 @@ st.markdown("""
         height: 50px;
         background: #ddd;
         border-radius: 4px;
-        overflow: hidden; /* Et ribad püsiksid konteineris */
+        overflow: hidden;
     }
 
     /* ROHELINE RIBA */
@@ -126,17 +146,16 @@ st.markdown("""
         background-color: #28a745;
         display: flex;
         align-items: center;
-        justify-content: flex-end; /* Tekst paremal lõpus */
+        justify-content: flex-end;
         padding-right: 5px;
         color: white;
         font-weight: bold;
         font-size: 0.9em;
         white-space: nowrap;
-        box-shadow: 1px 0 2px rgba(0,0,0,0.2);
         
         width: 0;
-        /* Roheline kasvab */
-        animation: growGreen var(--green-duration) ease-out forwards;
+        /* Linear tagab, et lõppeb täpselt siis kui punane peab algama */
+        animation: growGreen var(--green-duration) linear forwards;
         animation-delay: var(--start-delay);
     }
     @keyframes growGreen {
@@ -147,7 +166,7 @@ st.markdown("""
     .bar-red {
         height: 100%;
         position: absolute;
-        left: var(--green-width); /* Algab sealt kus roheline lõppeb */
+        left: var(--green-width); /* Algab täpselt rohelise lõpust */
         top: 0;
         background-color: #dc3545;
         display: flex;
@@ -157,18 +176,17 @@ st.markdown("""
         font-weight: bold;
         font-size: 0.9em;
         white-space: nowrap;
-        box-shadow: 1px 0 2px rgba(0,0,0,0.2);
         
         width: 0;
-        /* Punane kasvab alles pärast rohelist */
-        animation: growRed var(--red-duration) ease-out forwards;
+        /* Delay on täpselt start + rohelise aeg */
+        animation: growRed var(--red-duration) linear forwards;
         animation-delay: calc(var(--start-delay) + var(--green-duration));
     }
     @keyframes growRed {
         to { width: var(--red-width); }
     }
 
-    /* REAGEERIMISE JOON JA TEKST */
+    /* REAGEERIMISE JOON */
     .reaction-line {
         position: absolute;
         top: 40px;
@@ -178,9 +196,7 @@ st.markdown("""
         z-index: 5;
         border-right: 1px dashed white;
         left: 0;
-        /* Animeerime koos autoga */
         animation: moveReaction var(--react-duration) linear forwards; 
-        /* Linear on siin parem lühikese distantsi jaoks alguses, või ease-out kui tahame autoga sünkrooni */
         animation-delay: var(--start-delay);
     }
     @keyframes moveReaction {
@@ -194,7 +210,7 @@ st.markdown("""
         color: #444;
         padding-left: 6px;
         font-weight: bold;
-        background-color: rgba(238,238,238, 0.8);
+        /* background-color: rgba(238,238,238, 0.8); */
         left: 0;
         animation: moveReaction var(--react-duration) linear forwards;
         animation-delay: var(--start-delay);
@@ -342,23 +358,24 @@ if st.session_state.run_id > 0:
     else:
         red_bar_width = pct(excess_dist)
 
-    # Ajastused (Sekundites)
-    ANIM_DURATION = 2.5 # Auto liikumise aeg (rahulikum)
-    START_DELAY = 0.5   # Ootab alguses
+    # Ajastused (Sekundites) - KASUTAME LINEAARSET AJASTUST SÜNKROONIKS
+    ANIM_DURATION = 3.0 # Rahuikum (3 sekundit)
+    START_DELAY = 0.5   # Ootab 0.5s enne starti
     
-    # Arvutame ribade kestused proportsionaalselt auto liikumisega
-    # Auto liigub ease-out funktsiooniga, ribad järgi. 
-    # Lihtsustus: Jagame aja distantsi suhtega.
+    # Kogu teekonna pikkus (mida auto läbib animatsioonis)
     total_travel_dist = final_car_dist
-    if total_travel_dist <= 0: total_travel_dist = 1 # Vältimaks nulliga jagamist
+    if total_travel_dist <= 0: total_travel_dist = 1
     
+    # Arvutame ajad proportsionaalselt distantsile (Linear motion)
     green_ratio = min(1.0, total_dist_allowed / total_travel_dist)
     green_duration = ANIM_DURATION * green_ratio
     
-    red_duration = ANIM_DURATION - green_duration
-    if red_duration < 0: red_duration = 0
+    # Punase kestus on ülejäänud osa
+    red_duration = 0
+    if total_travel_dist > total_dist_allowed:
+        red_duration = ANIM_DURATION * (1.0 - green_ratio)
 
-    # Reageerimise joon liigub ainult reageerimise ajal
+    # Reageerimise joon
     react_ratio = min(1.0, r_dist_act / total_travel_dist)
     react_duration = ANIM_DURATION * react_ratio
 
@@ -367,7 +384,7 @@ if st.session_state.run_id > 0:
     
     animation_key = st.session_state.run_id
 
-    # --- HTML GENEREERIMINE (Üks rida) ---
+    # --- HTML GENEREERIMINE ---
     bar_html = f"""<div class="bar-wrapper" key="{animation_key}" style="--anim-duration: {ANIM_DURATION}s; --start-delay: {START_DELAY}s; --green-duration: {green_duration}s; --red-duration: {red_duration}s; --green-width: {green_bar_width}%; --red-width: {red_bar_width}%; --target-left: {car_target_pct}%; --react-left: {react_line_pct}%; --react-duration: {react_duration}s;"><div class="bar-header">Peatumisteekonna visualiseering</div><div class="icon-base pedestrian-icon" style="left: {ped_target_pct}%;"><span class="ped-label">{obstacle_dist:.1f}m</span><span class="flipped" style="display:inline-block;">🚶</span></div><div class="icon-base car-icon"><span class="flipped" style="display:inline-block;">🚗</span></div><div class="bar-container"><div class="bar-green">{bar1_text}</div><div class="bar-red">{bar2_text}</div></div><div class="reaction-line"></div><div class="reaction-label">Reageerimine ({r_dist_act:.1f}m)</div></div>"""
     
     st.markdown(bar_html, unsafe_allow_html=True)
