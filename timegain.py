@@ -1,6 +1,5 @@
 import streamlit as st
 import math
-import time
 
 # --- LEHE SEADISTUSED ---
 st.set_page_config(
@@ -12,138 +11,201 @@ st.set_page_config(
 # --- CSS STIILID ---
 st.markdown("""
 <style>
-    /* 1. ÜLDINE DISAIN (HELE TEEMA) */
+    /* 1. ÜLDINE DISAIN */
     .stApp {
         background-color: #f4f4f9;
         color: #333333;
     }
     
-    /* 2. TEKSTIVÄLJAD VALGEKS JA MUST TEKST (Sinu soov nr 1) */
-    .stTextInput input, .stNumberInput input, .stSelectbox div[data-testid="stMarkdownContainer"] {
+    /* 2. TEKSTIVÄLJAD VALGEKS */
+    input.st-ai, input.st-ah, div[data-baseweb="select"] > div {
         background-color: #ffffff !important;
         color: #000000 !important;
         border-color: #cccccc;
     }
-    /* Sildid (Labelid) */
+    div[data-baseweb="menu"], div[data-baseweb="popover"] {
+        background-color: #ffffff !important;
+    }
+    div[data-baseweb="menu"] li, div[data-baseweb="menu"] div {
+        color: #000000 !important;
+    }
     .stTextInput label, .stNumberInput label, .stSelectbox label {
         color: #333333 !important;
         font-weight: bold;
     }
-    /* Selectboxi valikute menüü */
-    ul[data-testid="stSelectboxVirtualDropdown"] {
-        background-color: #ffffff;
-        color: #000000;
-    }
 
-    /* 3. VISUAALNE GRAAFIK (RIBA) */
+    /* 3. VISUAALNE GRAAFIK */
     .bar-wrapper {
         position: relative;
         width: 100%;
-        height: 180px;
+        height: 220px; /* Piisavalt kõrge */
         background: #eeeeee;
         border-radius: 8px;
         margin-top: 10px;
         margin-bottom: 20px;
         overflow: hidden;
         border: 1px solid #ccc;
-        color: #333;
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
+    
     .bar-header {
         position: absolute;
-        top: 8px;
+        top: 10px;
         left: 0;
         width: 100%;
         text-align: center;
-        font-size: 13px;
+        font-size: 14px;
         color: #555;
         font-weight: bold;
         z-index: 20;
     }
+
+    /* IKOONIDE ÜLDSTIIL */
+    .icon-base {
+        position: absolute;
+        bottom: 95px; 
+        font-size: 28px;
+        transform: translateX(-50%); /* Tsentreerime ikooni punkti suhtes */
+        text-align: center;
+        line-height: 1;
+        z-index: 10;
+    }
+
+    /* JALAKÄIJA - PAIGAL (Ei animeeri 'left' omadust, see on fikseeritud) */
+    .pedestrian-icon {
+        z-index: 5; /* Auto sõidab visuaalselt üle või alla, aga tekst peab jääma peale */
+    }
+    
+    /* JALAKÄIJA TEKST - Tõstetud kõrgemale ja ettepoole */
+    .ped-label {
+        position: absolute;
+        top: -25px; /* Ikooni kohal */
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 12px;
+        font-weight: bold;
+        color: #000;
+        white-space: nowrap;
+        background: rgba(255,255,255,0.7);
+        padding: 2px 4px;
+        border-radius: 4px;
+        z-index: 30; /* Kõige peal */
+    }
+
+    /* AUTO - ANIMEERITUD */
+    .car-icon {
+        left: 0;
+        /* Animatsioon: nimi, kestus, viide (delay), funktsioon */
+        animation: moveCar var(--anim-duration) ease-out forwards;
+        animation-delay: var(--start-delay);
+        z-index: 20;
+    }
+    @keyframes moveCar {
+        from { left: 0; }
+        to { left: var(--target-left); }
+    }
+
+    /* RIBADE KONTEINER */
     .bar-container {
         position: absolute;
-        bottom: 30px; 
+        bottom: 40px; 
         left: 0;
         width: 100%;
         height: 50px;
         background: #ddd;
         border-radius: 4px;
+        overflow: hidden; /* Et ribad püsiksid konteineris */
     }
-    .bar-segment {
+
+    /* ROHELINE RIBA */
+    .bar-green {
         height: 100%;
         position: absolute;
+        left: 0;
         top: 0;
+        background-color: #28a745;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* Tekst paremal lõpus */
+        padding-right: 5px;
+        color: white;
+        font-weight: bold;
+        font-size: 0.9em;
+        white-space: nowrap;
+        box-shadow: 1px 0 2px rgba(0,0,0,0.2);
+        
+        width: 0;
+        /* Roheline kasvab */
+        animation: growGreen var(--green-duration) ease-out forwards;
+        animation-delay: var(--start-delay);
+    }
+    @keyframes growGreen {
+        to { width: var(--green-width); }
+    }
+
+    /* PUNANE RIBA */
+    .bar-red {
+        height: 100%;
+        position: absolute;
+        left: var(--green-width); /* Algab sealt kus roheline lõppeb */
+        top: 0;
+        background-color: #dc3545;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: bold;
-        font-size: 0.8em;
+        font-size: 0.9em;
         white-space: nowrap;
-        overflow: hidden;
         box-shadow: 1px 0 2px rgba(0,0,0,0.2);
-        /* Animatsioon */
-        width: 0; 
-        animation: growBar 1s ease-out forwards;
+        
+        width: 0;
+        /* Punane kasvab alles pärast rohelist */
+        animation: growRed var(--red-duration) ease-out forwards;
+        animation-delay: calc(var(--start-delay) + var(--green-duration));
     }
-    
-    @keyframes growBar {
-        to { width: var(--target-width); }
-    }
-
-    .icon-marker {
-        position: absolute;
-        bottom: 85px; 
-        font-size: 24px;
-        transform: translateX(-50%);
-        text-align: center;
-        line-height: 1;
-        /* Animatsioon */
-        left: 0;
-        animation: moveIcon 1s ease-out forwards;
-        z-index: 10;
-        color: #333;
-    }
-    
-    @keyframes moveIcon {
-        to { left: var(--target-left); }
+    @keyframes growRed {
+        to { width: var(--red-width); }
     }
 
+    /* REAGEERIMISE JOON JA TEKST */
     .reaction-line {
         position: absolute;
         top: 40px;
-        bottom: 30px;
+        bottom: 40px;
         width: 2px;
         background-color: rgba(0,0,0,0.4);
         z-index: 5;
         border-right: 1px dashed white;
         left: 0;
-        animation: moveLine 1s ease-out forwards;
+        /* Animeerime koos autoga */
+        animation: moveReaction var(--react-duration) linear forwards; 
+        /* Linear on siin parem lühikese distantsi jaoks alguses, või ease-out kui tahame autoga sünkrooni */
+        animation-delay: var(--start-delay);
+    }
+    @keyframes moveReaction {
+        to { left: var(--react-left); }
     }
     
-    @keyframes moveLine {
-        to { left: var(--target-left); }
-    }
-
     .reaction-label {
         position: absolute;
-        top: 40px;
+        top: 45px;
         font-size: 11px;
         color: #444;
         padding-left: 6px;
         font-weight: bold;
-        background-color: rgba(238,238,238, 0.7);
+        background-color: rgba(238,238,238, 0.8);
         left: 0;
-        animation: moveLine 1s ease-out forwards;
+        animation: moveReaction var(--react-duration) linear forwards;
+        animation-delay: var(--start-delay);
     }
 
-    /* Ikoonide pööramine */
     .flipped {
         display: inline-block;
         transform: scaleX(-1);
     }
 
-    /* 4. ALUMISED INFO-RIBAD */
+    /* ALUMISED KASTID */
     .alert-box {
         padding: 15px;
         border-radius: 8px;
@@ -158,80 +220,24 @@ st.markdown("""
     .alert-red { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24 !important;}
     .alert-yellow { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404 !important;}
 
-    /* 5. RISKIKAARTIDE STIIL */
-    .risk-container {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-bottom: 20px;
-        margin-top: 20px;
-    }
-    .risk-box {
-        flex: 1;
-        min-width: 120px;
-        padding: 15px;
-        border-radius: 8px;
-        text-align: center;
-        background-color: #e0f7fa;
-        border: 1px solid #0097a7;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        color: #333 !important;
-    }
-    .risk-icons {
-        font-size: 2em;
-        margin-bottom: 5px;
-        line-height: 1;
-    }
-    .risk-title {
-        font-weight: bold;
-        font-size: 0.9em;
-        margin-bottom: 5px;
-        display: block;
-        color: #555;
-    }
-    .risk-val {
-        font-size: 1.6em;
-        font-weight: bold;
-        color: #333;
-    }
+    /* RISKIKAARDID */
+    .risk-container { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; margin-top: 20px; }
+    .risk-box { flex: 1; min-width: 120px; padding: 15px; border-radius: 8px; text-align: center; background-color: #e0f7fa; border: 1px solid #0097a7; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: #333 !important; }
+    .risk-icons { font-size: 2em; margin-bottom: 5px; line-height: 1; }
+    .risk-title { font-weight: bold; font-size: 0.9em; margin-bottom: 5px; display: block; color: #555; }
+    .risk-val { font-size: 1.6em; font-weight: bold; color: #333; }
 
-    /* 6. EXPANDER HELEDAKS */
-    .streamlit-expanderContent {
-        background-color: #ffffff !important;
-        color: #333333 !important;
-        border: 1px solid #ddd;
-    }
-    .streamlit-expanderHeader {
-        background-color: #f0f0f0 !important;
-        color: #333333 !important;
-        font-weight: bold;
-    }
-    .streamlit-expanderContent p, .streamlit-expanderContent li {
-        color: #333333 !important;
-    }
+    /* EXPANDER */
+    .streamlit-expanderContent { background-color: #ffffff !important; color: #333333 !important; border: 1px solid #ddd; }
+    .streamlit-expanderHeader { background-color: #f0f0f0 !important; color: #333333 !important; font-weight: bold; }
+    .streamlit-expanderContent p, .streamlit-expanderContent li { color: #333333 !important; }
     
-    /* Nupp */
-    div.stButton > button {
-        width: 100%;
-        background-color: #ff4b4b;
-        color: white;
-        border: none;
-        padding: 12px;
-        font-size: 18px;
-        font-weight: bold;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-    div.stButton > button:hover {
-        background-color: #ff3333;
-        color: white;
-    }
+    div.stButton > button { width: 100%; background-color: #ff4b4b; color: white; border: none; padding: 12px; font-size: 18px; font-weight: bold; border-radius: 8px; margin-bottom: 20px; }
+    div.stButton > button:hover { background-color: #ff3333; color: white; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- FÜÜSIKA JA ARVUTUSED ---
-
+# --- ARVUTUSED ---
 DECELERATION_MULTIPLIERS = {
     "dryAsphalt": {"good": 7, "worn": 6, "very_worn": 5},
     "wetAsphalt": {"good": 4.5, "worn": 3.5, "very_worn": 2.5},
@@ -248,9 +254,7 @@ FATALITY_RISK_DATA = {
 
 def kmh_to_ms(kmh): return kmh * 1000 / 3600
 def ms_to_kmh(ms): return ms * 3600 / 1000
-
-def get_deceleration(road, tire):
-    return 9.81 * (DECELERATION_MULTIPLIERS[road][tire] / 10)
+def get_deceleration(road, tire): return 9.81 * (DECELERATION_MULTIPLIERS[road][tire] / 10)
 
 def calculate_stopping_distance(speed_kmh, road, tire, reaction_time):
     if speed_kmh <= 0: return 0, 0, 0, 0
@@ -258,9 +262,7 @@ def calculate_stopping_distance(speed_kmh, road, tire, reaction_time):
     decel = get_deceleration(road, tire)
     reaction_dist = speed_ms * reaction_time
     braking_dist = (speed_ms ** 2) / (2 * decel)
-    total_dist = reaction_dist + braking_dist
-    total_time = reaction_time + (speed_ms / decel)
-    return reaction_dist, braking_dist, total_dist, total_time
+    return reaction_dist, braking_dist, reaction_dist + braking_dist, reaction_time + (speed_ms / decel)
 
 def calculate_collision_speed(init_speed_kmh, obstacle_dist, road, tire, reaction_time):
     if init_speed_kmh <= 0: return 0
@@ -268,11 +270,9 @@ def calculate_collision_speed(init_speed_kmh, obstacle_dist, road, tire, reactio
     decel = get_deceleration(road, tire)
     reaction_dist = init_speed_ms * reaction_time
     dist_after_reaction = obstacle_dist - reaction_dist
-    
     if obstacle_dist <= reaction_dist: return init_speed_kmh
     speed_squared = (init_speed_ms ** 2) - (2 * decel * dist_after_reaction)
-    if speed_squared <= 0: return 0
-    return ms_to_kmh(math.sqrt(speed_squared))
+    return ms_to_kmh(math.sqrt(speed_squared)) if speed_squared > 0 else 0
 
 def get_fatality_risk(speed, risk_type):
     data = FATALITY_RISK_DATA[risk_type]
@@ -286,116 +286,103 @@ def get_fatality_risk(speed, risk_type):
             return r1 + (speed - v1) * (r2 - r1) / (v2 - v1)
     return data[-1][1]
 
-# --- UI (KASUTAJALIIDES) ---
-
+# --- UI ---
 st.title("Ajavõidu kalkulaator")
 
-# Initsialiseeri olek
 if 'run_id' not in st.session_state:
     st.session_state.run_id = 0
 
-# SISENDVÄLJAD
 col1, col2 = st.columns(2)
 with col1:
     distance = st.number_input("Läbitav vahemaa (km)", value=10.0, step=0.1, min_value=0.1)
     allowed_speed = st.number_input("Lubatud sõidukiirus (km/h)", value=30, step=1, min_value=1)
-    road_key = st.selectbox("Teeolud", options=["dryAsphalt", "wetAsphalt", "gravel", "snow", "ice"], 
-                            format_func=lambda x: {"dryAsphalt": "Kuiv asfalt", "wetAsphalt": "Märg asfalt", "gravel": "Kruus", "snow": "Lumi", "ice": "Jää"}[x])
+    road_key = st.selectbox("Teeolud", options=["dryAsphalt", "wetAsphalt", "gravel", "snow", "ice"], format_func=lambda x: {"dryAsphalt": "Kuiv asfalt", "wetAsphalt": "Märg asfalt", "gravel": "Kruus", "snow": "Lumi", "ice": "Jää"}[x])
 
 with col2:
     reaction_time = st.number_input("Reageerimisaeg (s)", value=1.0, step=0.1, min_value=0.1)
     actual_speed = st.number_input("Keskmine reaalne sõidukiirus (km/h)", value=50, step=1, min_value=1)
-    tire_key = st.selectbox("Rehvide seisukord", options=["good", "worn", "very_worn"], 
-                            format_func=lambda x: {"good": "Head", "worn": "Kulunud", "very_worn": "Väga kulunud"}[x])
+    tire_key = st.selectbox("Rehvide seisukord", options=["good", "worn", "very_worn"], format_func=lambda x: {"good": "Head", "worn": "Kulunud", "very_worn": "Väga kulunud"}[x])
 
 obstacle_dist = st.number_input("Kaugus takistusest (m)", value=25.0, step=1.0, min_value=0.0)
 
 st.write("") 
-
-# ARVUTA NUPP
 if st.button("Arvuta"):
-    st.session_state.run_id += 1 # Suurendame ID-d, et sundida uuesti renderdamist
+    st.session_state.run_id += 1 
 
-# --- TULEMUSED (KUVAME AINULT PÄRAST NUPUVAJUTUST) ---
+# --- TULEMUSED ---
 if st.session_state.run_id > 0:
     
     # Arvutused
     time_gain_min = (distance/allowed_speed - distance/actual_speed) * 60
-    
     r_dist_all, b_dist_all, total_dist_allowed, time_all = calculate_stopping_distance(allowed_speed, road_key, tire_key, reaction_time)
     r_dist_act, b_dist_act, total_dist_actual, time_act = calculate_stopping_distance(actual_speed, road_key, tire_key, reaction_time)
-    
     excess_dist = max(0, total_dist_actual - total_dist_allowed)
     coll_speed = calculate_collision_speed(actual_speed, obstacle_dist, road_key, tire_key, reaction_time)
     
-    # Riskid
     risk_ped = int(get_fatality_risk(coll_speed, 'pedestrian'))
     risk_head = int(get_fatality_risk(coll_speed, 'headOn'))
     risk_side = int(get_fatality_risk(coll_speed, 'sideImpact'))
     
-    # ---------------------------------------------------------
-    # 2. ANIMATSIOON / VISUALISEERING
-    # ---------------------------------------------------------
-    
-    # Arvutame skaala
+    # --- ANIMATSIOONI PARAMEETRID ---
     max_scale = max(total_dist_actual, total_dist_allowed, obstacle_dist, 1) * 1.15
     def pct(val): return (val / max_scale) * 100
     
     final_car_dist = min(total_dist_actual, obstacle_dist) if coll_speed > 0 else total_dist_actual
-    car_pos = pct(final_car_dist)
-    ped_pos = pct(obstacle_dist)
     
-    bar1_width = pct(total_dist_allowed)
-    bar2_width = pct(excess_dist)
-    bar2_left = bar1_width 
+    # Asukohad (%)
+    car_target_pct = pct(final_car_dist)
+    ped_target_pct = pct(obstacle_dist)
+    react_line_pct = pct(r_dist_act)
     
+    # Ribade laiused (%)
+    green_bar_width = pct(total_dist_allowed)
     if total_dist_actual < total_dist_allowed:
-        bar1_width = pct(total_dist_actual)
-        bar2_width = 0
+        green_bar_width = pct(total_dist_actual)
+        red_bar_width = 0
+    else:
+        red_bar_width = pct(excess_dist)
 
-    bar1_text = f"{total_dist_allowed:.1f}m" if bar1_width > 12 else ""
-    bar2_text = f"+{excess_dist:.1f}m" if bar2_width > 12 else ""
+    # Ajastused (Sekundites)
+    ANIM_DURATION = 2.5 # Auto liikumise aeg (rahulikum)
+    START_DELAY = 0.5   # Ootab alguses
     
-    # NB: Lisame key=run_id, et sundida brauserit animatsiooni uuesti mängima
+    # Arvutame ribade kestused proportsionaalselt auto liikumisega
+    # Auto liigub ease-out funktsiooniga, ribad järgi. 
+    # Lihtsustus: Jagame aja distantsi suhtega.
+    total_travel_dist = final_car_dist
+    if total_travel_dist <= 0: total_travel_dist = 1 # Vältimaks nulliga jagamist
+    
+    green_ratio = min(1.0, total_dist_allowed / total_travel_dist)
+    green_duration = ANIM_DURATION * green_ratio
+    
+    red_duration = ANIM_DURATION - green_duration
+    if red_duration < 0: red_duration = 0
+
+    # Reageerimise joon liigub ainult reageerimise ajal
+    react_ratio = min(1.0, r_dist_act / total_travel_dist)
+    react_duration = ANIM_DURATION * react_ratio
+
+    bar1_text = f"{total_dist_allowed:.1f}m" if green_bar_width > 12 else ""
+    bar2_text = f"+{excess_dist:.1f}m" if red_bar_width > 12 else ""
+    
     animation_key = st.session_state.run_id
 
-    bar_html = "".join([
-        f'<div class="bar-wrapper" key="{animation_key}">',
-        '<div class="bar-header">Peatumisteekonna visualiseering</div>',
-        f'<div class="icon-marker" style="--target-left: {ped_pos}%;">',
-        '<span class="flipped" style="display:inline-block;">🚶</span><br>',
-        f'<span style="font-size: 12px; font-weight:bold;">{obstacle_dist:.1f}m</span>',
-        '</div>',
-        f'<div class="icon-marker" style="--target-left: {car_pos}%; z-index: 12;">',
-        '<span class="flipped" style="display:inline-block;">🚗</span>',
-        '</div>',
-        '<div class="bar-container">',
-        f'<div class="bar-segment" style="--target-width: {bar1_width}%; background-color: #28a745; left: 0;">{bar1_text}</div>',
-        f'<div class="bar-segment" style="--target-width: {bar2_width}%; background-color: #dc3545; left: {bar2_left}%;">{bar2_text}</div>',
-        '</div>',
-        f'<div class="reaction-line" style="--target-left: {pct(r_dist_act)}%;"></div>',
-        f'<div class="reaction-label" style="--target-left: {pct(r_dist_act) + 1}%;">Reageerimine ({r_dist_act:.1f}m)</div>',
-        '</div>'
-    ])
+    # --- HTML GENEREERIMINE (Üks rida) ---
+    bar_html = f"""<div class="bar-wrapper" key="{animation_key}" style="--anim-duration: {ANIM_DURATION}s; --start-delay: {START_DELAY}s; --green-duration: {green_duration}s; --red-duration: {red_duration}s; --green-width: {green_bar_width}%; --red-width: {red_bar_width}%; --target-left: {car_target_pct}%; --react-left: {react_line_pct}%; --react-duration: {react_duration}s;"><div class="bar-header">Peatumisteekonna visualiseering</div><div class="icon-base pedestrian-icon" style="left: {ped_target_pct}%;"><span class="ped-label">{obstacle_dist:.1f}m</span><span class="flipped" style="display:inline-block;">🚶</span></div><div class="icon-base car-icon"><span class="flipped" style="display:inline-block;">🚗</span></div><div class="bar-container"><div class="bar-green">{bar1_text}</div><div class="bar-red">{bar2_text}</div></div><div class="reaction-line"></div><div class="reaction-label">Reageerimine ({r_dist_act:.1f}m)</div></div>"""
+    
     st.markdown(bar_html, unsafe_allow_html=True)
 
-    # ---------------------------------------------------------
-    # 3. INFO: KOKKUPÕRKE KIIRUS (Punane/Roheline)
-    # ---------------------------------------------------------
+    # 3. INFO
     if coll_speed > 0:
         st.markdown(f'<div class="alert-box alert-red">💥 Kokkupõrge kiirusel {coll_speed:.0f} km/h</div>', unsafe_allow_html=True)
     else:
         st.markdown(f'<div class="alert-box alert-green">✅ Sõiduk peatus enne takistust.</div>', unsafe_allow_html=True)
 
-    # ---------------------------------------------------------
-    # 4. INFO: LISAMAA (Kollane)
-    # ---------------------------------------------------------
+    # 4. LISAMAA
     if excess_dist > 0:
         st.markdown(f'<div class="alert-box alert-yellow">Kiiruse ületamisest tingitud lisamaa: +{excess_dist:.1f} meetrit</div>', unsafe_allow_html=True)
 
-    # ---------------------------------------------------------
-    # 5. INFO: AJAVÕIT (Roheline/Punane)
-    # ---------------------------------------------------------
+    # 5. AJAVÕIT
     time_gain_msg = ""
     bg_class = "alert-yellow"
     if time_gain_min > 0.01:
@@ -409,9 +396,7 @@ if st.session_state.run_id > 0:
 
     st.markdown(f'<div class="alert-box {bg_class}">{time_gain_msg}</div>', unsafe_allow_html=True)
 
-    # ---------------------------------------------------------
-    # 6. DETAILNE ARVUTUSKÄIK (i ikooniga)
-    # ---------------------------------------------------------
+    # 6. DETAILID
     with st.expander("ℹ️ Detailne arvutuskäik"):
         road_name = {"dryAsphalt": "Kuiv asfalt", "wetAsphalt": "Märg asfalt", "gravel": "Kruus", "snow": "Lumi", "ice": "Jää"}[road_key]
         tire_name = {"good": "Head", "worn": "Kulunud", "very_worn": "Väga kulunud"}[tire_key]
@@ -437,9 +422,7 @@ if st.session_state.run_id > 0:
         * Tegelikul kiirusel on kokkupõrke kiirus **{coll_speed:.1f} km/h**.
         """)
 
-    # ---------------------------------------------------------
-    # 7. TÕENÄOSUSED (3 Kasti)
-    # ---------------------------------------------------------
+    # 7. RISKID
     def get_risk_color(val):
         if val == 0: return "#28a745"
         if val < 50: return "#ffc107"
