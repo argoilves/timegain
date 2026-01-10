@@ -78,12 +78,21 @@ st.markdown("""
         line-height: 1;
     }
 
-    /* JALAKÄIJA - PAIGAL */
+    /* JALAKÄIJA */
     .pedestrian-icon {
-        z-index: 5; 
+        z-index: 5; /* Jääb auto alla */
+        transition: all 0.3s ease;
     }
     
-    /* JALAKÄIJA TEKST */
+    /* Kui sai pihta (klassi lisame Pythonis) */
+    .pedestrian-hit {
+        transform: translateX(-50%) rotate(90deg); /* Pikali */
+        color: #d32f2f; /* Veripunane */
+        bottom: 85px; /* Veidi madalamale */
+        opacity: 0.8;
+    }
+    
+    /* JALAKÄIJA TEKST - Auto sõidab üle, jääb auto taha */
     .ped-label {
         position: absolute;
         top: 35px;
@@ -99,7 +108,8 @@ st.markdown("""
     /* AUTO - ANIMEERITUD */
     .car-icon {
         left: 0;
-        animation: moveCar var(--anim-duration) linear forwards;
+        /* ease-out teeb lõpu aeglaseks */
+        animation: moveCar var(--anim-duration) ease-out forwards;
         animation-delay: var(--start-delay);
         z-index: 20; 
     }
@@ -136,7 +146,11 @@ st.markdown("""
         font-size: 0.9em;
         white-space: nowrap;
         width: 0;
-        animation: growGreen var(--green-duration) linear forwards;
+        
+        /* Kui punane riba on olemas, on roheline "kiire" osa (linear). 
+           Kui punast pole, on roheline "aeglustuv" osa (ease-out). 
+           Seda juhime Pythonist muutuja --green-timing kaudu. */
+        animation: growGreen var(--green-duration) var(--green-timing) forwards;
         animation-delay: var(--start-delay);
     }
     @keyframes growGreen {
@@ -158,14 +172,16 @@ st.markdown("""
         font-size: 0.9em;
         white-space: nowrap;
         width: 0;
-        animation: growRed var(--red-duration) linear forwards;
+        
+        /* Punane on alati pidurdamise lõpp -> ease-out */
+        animation: growRed var(--red-duration) ease-out forwards;
         animation-delay: calc(var(--start-delay) + var(--green-duration));
     }
     @keyframes growRed {
         to { width: var(--red-width); }
     }
 
-    /* REAGEERIMISE JOON JA TEKST - NÜÜD STATILISED */
+    /* REAGEERIMISE JOON JA TEKST - STAATILISED */
     .reaction-line {
         position: absolute;
         top: 40px;
@@ -174,7 +190,6 @@ st.markdown("""
         background-color: rgba(0,0,0,0.4);
         z-index: 5;
         border-right: 1px dashed white;
-        /* EI OLE ENAM ANIMATSIOONI, ON KOHE PAIGAL */
     }
     
     .reaction-label {
@@ -184,7 +199,6 @@ st.markdown("""
         color: #444;
         padding-left: 6px;
         font-weight: bold;
-        /* EI OLE ENAM ANIMATSIOONI */
     }
 
     .flipped {
@@ -314,23 +328,26 @@ if st.session_state.run_id > 0:
     max_scale = max(total_dist_actual, total_dist_allowed, obstacle_dist, 1) * 1.15
     def pct(val): return (val / max_scale) * 100
     
-    final_car_dist = min(total_dist_actual, obstacle_dist) if coll_speed > 0 else total_dist_actual
+    # Auto sihtmärk on nüüd ALATI tegelik peatumisteekond (mitte takistus)
+    final_car_dist = total_dist_actual
     
     # Asukohad (%)
     car_target_pct = pct(final_car_dist)
     ped_target_pct = pct(obstacle_dist)
-    react_line_pct = pct(r_dist_act) # Reageerimise koht on fikseeritud
+    react_line_pct = pct(r_dist_act) 
     
     # Ribade laiused (%)
     green_bar_width = pct(total_dist_allowed)
     if total_dist_actual < total_dist_allowed:
         green_bar_width = pct(total_dist_actual)
         red_bar_width = 0
+        green_timing = "ease-out" # Kui peatub rohelises, siis aeglustub seal
     else:
         red_bar_width = pct(excess_dist)
+        green_timing = "linear" # Kui sõidab punasesse, on roheline "kiire" osa
 
     # Ajastused (Sekundites)
-    ANIM_DURATION = 3.0
+    ANIM_DURATION = 2.0 # Kiirem
     START_DELAY = 0.5 
     
     total_travel_dist = final_car_dist
@@ -348,9 +365,13 @@ if st.session_state.run_id > 0:
     
     animation_key = st.session_state.run_id
 
+    # Jalakäija stiil: kas sai pihta?
+    ped_class = "pedestrian-icon"
+    if coll_speed > 0:
+        ped_class += " pedestrian-hit"
+
     # --- HTML GENEREERIMINE ---
-    # Reageerimise joon ja label (style="left: ...") on nüüd staatilised ja animatsioonita
-    bar_html = f"""<div class="bar-wrapper" key="{animation_key}" style="--anim-duration: {ANIM_DURATION}s; --start-delay: {START_DELAY}s; --green-duration: {green_duration}s; --red-duration: {red_duration}s; --green-width: {green_bar_width}%; --red-width: {red_bar_width}%; --target-left: {car_target_pct}%;"><div class="bar-header">Peatumisteekonna visualiseering</div><div class="icon-base pedestrian-icon" style="left: {ped_target_pct}%;"><span class="ped-label">{obstacle_dist:.1f}m</span><span class="flipped" style="display:inline-block;">🚶</span></div><div class="icon-base car-icon"><span class="flipped" style="display:inline-block;">🚗</span></div><div class="bar-container"><div class="bar-green">{bar1_text}</div><div class="bar-red">{bar2_text}</div></div><div class="reaction-line" style="left: {react_line_pct}%;"></div><div class="reaction-label" style="left: {react_line_pct}%;">Reageerimine ({r_dist_act:.1f}m)</div></div>"""
+    bar_html = f"""<div class="bar-wrapper" key="{animation_key}" style="--anim-duration: {ANIM_DURATION}s; --start-delay: {START_DELAY}s; --green-duration: {green_duration}s; --red-duration: {red_duration}s; --green-width: {green_bar_width}%; --red-width: {red_bar_width}%; --target-left: {car_target_pct}%; --green-timing: {green_timing};"><div class="bar-header">Peatumisteekonna visualiseering</div><div class="icon-base {ped_class}" style="left: {ped_target_pct}%;"><span class="ped-label">{obstacle_dist:.1f}m</span><span class="flipped" style="display:inline-block;">🚶</span></div><div class="icon-base car-icon"><span class="flipped" style="display:inline-block;">🚗</span></div><div class="bar-container"><div class="bar-green">{bar1_text}</div><div class="bar-red">{bar2_text}</div></div><div class="reaction-line" style="left: {react_line_pct}%;"></div><div class="reaction-label" style="left: {react_line_pct}%;">Reageerimine ({r_dist_act:.1f}m)</div></div>"""
     
     st.markdown(bar_html, unsafe_allow_html=True)
 
