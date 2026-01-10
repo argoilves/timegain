@@ -17,45 +17,29 @@ st.markdown("""
         color: #333333;
     }
     
-    /* 2. TEKSTIVÄLJAD JA RIPPMENÜÜD (DROPDOWNS) VALGEKS */
-    
-    /* Tavaline sisendkast */
+    /* 2. TEKSTIVÄLJAD JA RIPPMENÜÜD VALGEKS */
     input.st-ai, input.st-ah, div[data-baseweb="select"] > div {
         background-color: #ffffff !important;
         color: #000000 !important;
         border-color: #cccccc;
     }
-    
-    /* Sildid (Labelid) */
-    .stTextInput label, .stNumberInput label, .stSelectbox label {
-        color: #333333 !important;
-        font-weight: bold;
-    }
-
-    /* RIPPMENÜÜDE SISU (See, mis lahti hüppab) */
-    div[data-baseweb="popover"], 
-    div[data-baseweb="menu"],
-    ul[data-testid="stSelectboxVirtualDropdown"] {
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-testid="stSelectboxVirtualDropdown"] {
         background-color: #ffffff !important;
         border: 1px solid #ccc !important;
     }
-    
-    /* Rippmenüü valikud */
-    li[role="option"], 
-    li[data-baseweb="option"], 
-    div[role="option"] {
+    li[role="option"], li[data-baseweb="option"], div[role="option"] {
         color: #000000 !important;
         background-color: #ffffff !important;
     }
-    
-    /* Valiku üleliikumine (hover) */
-    li[role="option"]:hover, li[role="option"]:focus, .stSelectboxVirtualDropdownOption:hover {
+    li[role="option"]:hover, .stSelectboxVirtualDropdownOption:hover {
         background-color: #f0f0f0 !important;
     }
-    
-    /* Hetkel valitud väärtus kastis */
     div[data-testid="stSelectbox"] div[data-baseweb="select"] div {
         color: #000000 !important;
+    }
+    .stTextInput label, .stNumberInput label, .stSelectbox label {
+        color: #333333 !important;
+        font-weight: bold;
     }
 
     /* 3. VISUAALNE GRAAFIK */
@@ -99,26 +83,25 @@ st.markdown("""
         z-index: 5; 
     }
     
-    /* JALAKÄIJA TEKST - Auto sõidab sellest ÜLE (z-index väiksem kui autol) */
+    /* JALAKÄIJA TEKST */
     .ped-label {
         position: absolute;
-        top: 35px; /* Ikooni all/kõrval teekonna peal */
+        top: 35px;
         left: 50%;
         transform: translateX(-50%);
         font-size: 12px;
         font-weight: bold;
         color: #555;
         white-space: nowrap;
-        z-index: 1; /* Väike z-index, et auto kataks selle */
+        z-index: 1; 
     }
 
     /* AUTO - ANIMEERITUD */
     .car-icon {
         left: 0;
-        /* Kasutame 'linear' et sünkroon oleks perfektne */
         animation: moveCar var(--anim-duration) linear forwards;
         animation-delay: var(--start-delay);
-        z-index: 20; /* Auto on kõige peal */
+        z-index: 20; 
     }
     @keyframes moveCar {
         from { left: 0; }
@@ -152,9 +135,7 @@ st.markdown("""
         font-weight: bold;
         font-size: 0.9em;
         white-space: nowrap;
-        
         width: 0;
-        /* Linear tagab, et lõppeb täpselt siis kui punane peab algama */
         animation: growGreen var(--green-duration) linear forwards;
         animation-delay: var(--start-delay);
     }
@@ -166,7 +147,7 @@ st.markdown("""
     .bar-red {
         height: 100%;
         position: absolute;
-        left: var(--green-width); /* Algab täpselt rohelise lõpust */
+        left: var(--green-width);
         top: 0;
         background-color: #dc3545;
         display: flex;
@@ -176,9 +157,7 @@ st.markdown("""
         font-weight: bold;
         font-size: 0.9em;
         white-space: nowrap;
-        
         width: 0;
-        /* Delay on täpselt start + rohelise aeg */
         animation: growRed var(--red-duration) linear forwards;
         animation-delay: calc(var(--start-delay) + var(--green-duration));
     }
@@ -186,7 +165,7 @@ st.markdown("""
         to { width: var(--red-width); }
     }
 
-    /* REAGEERIMISE JOON */
+    /* REAGEERIMISE JOON JA TEKST - NÜÜD STATILISED */
     .reaction-line {
         position: absolute;
         top: 40px;
@@ -195,12 +174,7 @@ st.markdown("""
         background-color: rgba(0,0,0,0.4);
         z-index: 5;
         border-right: 1px dashed white;
-        left: 0;
-        animation: moveReaction var(--react-duration) linear forwards; 
-        animation-delay: var(--start-delay);
-    }
-    @keyframes moveReaction {
-        to { left: var(--react-left); }
+        /* EI OLE ENAM ANIMATSIOONI, ON KOHE PAIGAL */
     }
     
     .reaction-label {
@@ -210,10 +184,7 @@ st.markdown("""
         color: #444;
         padding-left: 6px;
         font-weight: bold;
-        /* background-color: rgba(238,238,238, 0.8); */
-        left: 0;
-        animation: moveReaction var(--react-duration) linear forwards;
-        animation-delay: var(--start-delay);
+        /* EI OLE ENAM ANIMATSIOONI */
     }
 
     .flipped {
@@ -348,7 +319,7 @@ if st.session_state.run_id > 0:
     # Asukohad (%)
     car_target_pct = pct(final_car_dist)
     ped_target_pct = pct(obstacle_dist)
-    react_line_pct = pct(r_dist_act)
+    react_line_pct = pct(r_dist_act) # Reageerimise koht on fikseeritud
     
     # Ribade laiused (%)
     green_bar_width = pct(total_dist_allowed)
@@ -358,26 +329,19 @@ if st.session_state.run_id > 0:
     else:
         red_bar_width = pct(excess_dist)
 
-    # Ajastused (Sekundites) - KASUTAME LINEAARSET AJASTUST SÜNKROONIKS
-    ANIM_DURATION = 3.0 # Rahuikum (3 sekundit)
-    START_DELAY = 0.5   # Ootab 0.5s enne starti
+    # Ajastused (Sekundites)
+    ANIM_DURATION = 3.0
+    START_DELAY = 0.5 
     
-    # Kogu teekonna pikkus (mida auto läbib animatsioonis)
     total_travel_dist = final_car_dist
     if total_travel_dist <= 0: total_travel_dist = 1
     
-    # Arvutame ajad proportsionaalselt distantsile (Linear motion)
     green_ratio = min(1.0, total_dist_allowed / total_travel_dist)
     green_duration = ANIM_DURATION * green_ratio
     
-    # Punase kestus on ülejäänud osa
     red_duration = 0
     if total_travel_dist > total_dist_allowed:
         red_duration = ANIM_DURATION * (1.0 - green_ratio)
-
-    # Reageerimise joon
-    react_ratio = min(1.0, r_dist_act / total_travel_dist)
-    react_duration = ANIM_DURATION * react_ratio
 
     bar1_text = f"{total_dist_allowed:.1f}m" if green_bar_width > 12 else ""
     bar2_text = f"+{excess_dist:.1f}m" if red_bar_width > 12 else ""
@@ -385,7 +349,8 @@ if st.session_state.run_id > 0:
     animation_key = st.session_state.run_id
 
     # --- HTML GENEREERIMINE ---
-    bar_html = f"""<div class="bar-wrapper" key="{animation_key}" style="--anim-duration: {ANIM_DURATION}s; --start-delay: {START_DELAY}s; --green-duration: {green_duration}s; --red-duration: {red_duration}s; --green-width: {green_bar_width}%; --red-width: {red_bar_width}%; --target-left: {car_target_pct}%; --react-left: {react_line_pct}%; --react-duration: {react_duration}s;"><div class="bar-header">Peatumisteekonna visualiseering</div><div class="icon-base pedestrian-icon" style="left: {ped_target_pct}%;"><span class="ped-label">{obstacle_dist:.1f}m</span><span class="flipped" style="display:inline-block;">🚶</span></div><div class="icon-base car-icon"><span class="flipped" style="display:inline-block;">🚗</span></div><div class="bar-container"><div class="bar-green">{bar1_text}</div><div class="bar-red">{bar2_text}</div></div><div class="reaction-line"></div><div class="reaction-label">Reageerimine ({r_dist_act:.1f}m)</div></div>"""
+    # Reageerimise joon ja label (style="left: ...") on nüüd staatilised ja animatsioonita
+    bar_html = f"""<div class="bar-wrapper" key="{animation_key}" style="--anim-duration: {ANIM_DURATION}s; --start-delay: {START_DELAY}s; --green-duration: {green_duration}s; --red-duration: {red_duration}s; --green-width: {green_bar_width}%; --red-width: {red_bar_width}%; --target-left: {car_target_pct}%;"><div class="bar-header">Peatumisteekonna visualiseering</div><div class="icon-base pedestrian-icon" style="left: {ped_target_pct}%;"><span class="ped-label">{obstacle_dist:.1f}m</span><span class="flipped" style="display:inline-block;">🚶</span></div><div class="icon-base car-icon"><span class="flipped" style="display:inline-block;">🚗</span></div><div class="bar-container"><div class="bar-green">{bar1_text}</div><div class="bar-red">{bar2_text}</div></div><div class="reaction-line" style="left: {react_line_pct}%;"></div><div class="reaction-label" style="left: {react_line_pct}%;">Reageerimine ({r_dist_act:.1f}m)</div></div>"""
     
     st.markdown(bar_html, unsafe_allow_html=True)
 
