@@ -17,26 +17,47 @@ st.markdown("""
         color: #333333;
     }
     
-    /* 2. TEKSTIVÄLJAD JA RIPPMENÜÜD VALGEKS */
-    input.st-ai, input.st-ah, div[data-baseweb="select"] > div {
+    /* 2. TEKSTIVÄLJAD JA RIPPMENÜÜD VALGEKS (AGRESSIIVNE FIX) */
+    
+    /* Sisendkastid ise */
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="base-input"],
+    input.st-ai, input.st-ah {
         background-color: #ffffff !important;
         color: #000000 !important;
-        border-color: #cccccc;
+        border-color: #cccccc !important;
     }
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[data-testid="stSelectboxVirtualDropdown"] {
+    
+    /* Rippmenüü avanev osa (popover/menu) */
+    div[data-baseweb="popover"],
+    div[data-baseweb="menu"],
+    ul[data-baseweb="menu"] {
         background-color: #ffffff !important;
-        border: 1px solid #ccc !important;
-    }
-    li[role="option"], li[data-baseweb="option"], div[role="option"] {
         color: #000000 !important;
-        background-color: #ffffff !important;
     }
-    li[role="option"]:hover, .stSelectboxVirtualDropdownOption:hover {
+    
+    /* Valikud rippmenüüs */
+    li[data-baseweb="option"],
+    div[role="option"] {
+        background-color: #ffffff !important;
+        color: #333333 !important;
+    }
+    
+    /* Valiku peal hiirega olles (hover) või aktiivne valik */
+    li[data-baseweb="option"]:hover,
+    li[data-baseweb="option"][aria-selected="true"],
+    div[role="option"]:hover,
+    div[role="option"][aria-selected="true"] {
         background-color: #f0f0f0 !important;
-    }
-    div[data-testid="stSelectbox"] div[data-baseweb="select"] div {
         color: #000000 !important;
     }
+    
+    /* Valitud väärtuse tekst kastis */
+    div[data-testid="stSelectbox"] div[class*="singleValue"] {
+        color: #000000 !important;
+    }
+
+    /* Sildid (Labelid) */
     .stTextInput label, .stNumberInput label, .stSelectbox label {
         color: #333333 !important;
         font-weight: bold;
@@ -76,33 +97,38 @@ st.markdown("""
         transform: translateX(-50%);
         text-align: center;
         line-height: 1;
+        width: 60px; /* Fikseeritud laius, et tsentreerimine toimiks */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     /* JALAKÄIJA */
-    .pedestrian-icon {
+    .pedestrian-wrapper {
         z-index: 5; /* Jääb auto alla */
-        transition: all 0.3s ease;
     }
     
-    /* Kui sai pihta (klassi lisame Pythonis) */
-    .pedestrian-hit {
-        transform: translateX(-50%) rotate(90deg); /* Pikali */
+    /* Jalakäija ikoon ise (see pöördub) */
+    .ped-icon-inner {
+        display: inline-block;
+        transition: transform 0.2s ease-in, color 0.2s ease-in;
+        font-size: 28px;
+    }
+    
+    /* Jalakäija on pikali (rakendub ainult ikoonile) */
+    .ped-hit {
+        transform: rotate(90deg); /* Pikali */
         color: #d32f2f; /* Veripunane */
-        bottom: 85px; /* Veidi madalamale */
-        opacity: 0.8;
     }
     
-    /* JALAKÄIJA TEKST - Auto sõidab üle, jääb auto taha */
+    /* JALAKÄIJA TEKST - See EI pöördu */
     .ped-label {
-        position: absolute;
-        top: 35px;
-        left: 50%;
-        transform: translateX(-50%);
         font-size: 12px;
         font-weight: bold;
-        color: #555;
+        color: #333;
         white-space: nowrap;
-        z-index: 1; 
+        margin-bottom: 2px;
+        z-index: 30; /* Tekst on kõige peal */
     }
 
     /* AUTO - ANIMEERITUD */
@@ -148,8 +174,7 @@ st.markdown("""
         width: 0;
         
         /* Kui punane riba on olemas, on roheline "kiire" osa (linear). 
-           Kui punast pole, on roheline "aeglustuv" osa (ease-out). 
-           Seda juhime Pythonist muutuja --green-timing kaudu. */
+           Kui punast pole, on roheline "aeglustuv" osa (ease-out). */
         animation: growGreen var(--green-duration) var(--green-timing) forwards;
         animation-delay: var(--start-delay);
     }
@@ -347,7 +372,7 @@ if st.session_state.run_id > 0:
         green_timing = "linear" # Kui sõidab punasesse, on roheline "kiire" osa
 
     # Ajastused (Sekundites)
-    ANIM_DURATION = 2.0 # Kiirem
+    ANIM_DURATION = 4.0 # Veel rahulikum
     START_DELAY = 0.5 
     
     total_travel_dist = final_car_dist
@@ -365,13 +390,14 @@ if st.session_state.run_id > 0:
     
     animation_key = st.session_state.run_id
 
-    # Jalakäija stiil: kas sai pihta?
-    ped_class = "pedestrian-icon"
+    # Jalakäija stiil: kas sai pihta? (Rakendame klassi SISEMISELE ikoonile)
+    ped_inner_class = "ped-icon-inner"
     if coll_speed > 0:
-        ped_class += " pedestrian-hit"
+        ped_inner_class += " ped-hit"
 
     # --- HTML GENEREERIMINE ---
-    bar_html = f"""<div class="bar-wrapper" key="{animation_key}" style="--anim-duration: {ANIM_DURATION}s; --start-delay: {START_DELAY}s; --green-duration: {green_duration}s; --red-duration: {red_duration}s; --green-width: {green_bar_width}%; --red-width: {red_bar_width}%; --target-left: {car_target_pct}%; --green-timing: {green_timing};"><div class="bar-header">Peatumisteekonna visualiseering</div><div class="icon-base {ped_class}" style="left: {ped_target_pct}%;"><span class="ped-label">{obstacle_dist:.1f}m</span><span class="flipped" style="display:inline-block;">🚶</span></div><div class="icon-base car-icon"><span class="flipped" style="display:inline-block;">🚗</span></div><div class="bar-container"><div class="bar-green">{bar1_text}</div><div class="bar-red">{bar2_text}</div></div><div class="reaction-line" style="left: {react_line_pct}%;"></div><div class="reaction-label" style="left: {react_line_pct}%;">Reageerimine ({r_dist_act:.1f}m)</div></div>"""
+    # NB: Jalakäija struktuur on nüüd: Wrapper (paigal) -> Tekst (püsti) + Ikoon (pöörab)
+    bar_html = f"""<div class="bar-wrapper" key="{animation_key}" style="--anim-duration: {ANIM_DURATION}s; --start-delay: {START_DELAY}s; --green-duration: {green_duration}s; --red-duration: {red_duration}s; --green-width: {green_bar_width}%; --red-width: {red_bar_width}%; --target-left: {car_target_pct}%; --green-timing: {green_timing};"><div class="bar-header">Peatumisteekonna visualiseering</div><div class="icon-base pedestrian-wrapper" style="left: {ped_target_pct}%;"><span class="ped-label">{obstacle_dist:.1f}m</span><span class="{ped_inner_class}"><span class="flipped" style="display:inline-block;">🚶</span></span></div><div class="icon-base car-icon"><span class="flipped" style="display:inline-block;">🚗</span></div><div class="bar-container"><div class="bar-green">{bar1_text}</div><div class="bar-red">{bar2_text}</div></div><div class="reaction-line" style="left: {react_line_pct}%;"></div><div class="reaction-label" style="left: {react_line_pct}%;">Reageerimine ({r_dist_act:.1f}m)</div></div>"""
     
     st.markdown(bar_html, unsafe_allow_html=True)
 
